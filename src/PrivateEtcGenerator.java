@@ -23,6 +23,7 @@ public class PrivateEtcGenerator {
 
     private static File profiles;
     private static File profilesNew;
+    private static File gathered;
     private static final List<String> profilesTested = Arrays.asList("atril", "audacity", "bleachbit", "darktable", "eom", "gimp", "gnome-2048", "gnome-chess"
         , "gucharmap", "inkscape", "liferea", "lollypop", "mate-calc", "mate-color-select", "meld", "minetest", "onionshare", "parole", "picard", "pluma"
         , "scribus", "libreoffice", "simple-scan", "soundconverter", "torbrowser-launcher", "transmission-gtk", "xonotic", "wget", "youtube-dl", "pdfmod"
@@ -32,12 +33,21 @@ public class PrivateEtcGenerator {
 
     public static void main(String[] args) {
         if (args.length == 0) {
-            System.out.println("Please supply an input an output path!");
-            System.out.println("Both MUST be absolute and end with /");
+            System.out.println("Please supply an absolute directory containing: profiles, profiles-new, gathered");
             System.exit(1);
         }
-        profiles = new File(args[0]);
-        profilesNew = new File(args[1]);
+        if(!args[0].endsWith("/")) {
+            args[0] += "/";
+        }
+        profiles = new File(args[0] + "profiles/");
+        profilesNew = new File(args[0] + "profiles-new/");
+        gathered = new File(args[0] + "gathered/");
+        if(!profiles.exists() || !profilesNew.exists() || !gathered.exists()) {
+            System.out.println("Required directories do not exist!");
+            System.out.println("Please create and populate: profiles, profiles-new, gathered");
+            System.exit(1);
+        }
+
         for (File profile : profiles.listFiles()) {
             addEtc(profile);
         }
@@ -157,7 +167,7 @@ public class PrivateEtcGenerator {
             etcContents.addAll(getEtcByProfileOptionsGui(isGtk, isQt, isKde));
             etcContents.addAll(getEtcBySpecial(specialExtras, profileName));
             etcContents.addAll(getEtcBySpecific(profileName));
-            //etcContents.addAll(getEtcByGathered());
+            etcContents.addAll(getEtcByGathered(profileName));
 
             String generatedEtc = shouldEnable(hadPrivateEtc, profileName) + "private-etc " + removeGlobs(delimitArray(etcContents));
 
@@ -379,10 +389,42 @@ public class PrivateEtcGenerator {
         return etcContents;
     }
 
-    private static Set<String> getEtcByGathered() {
-        Set<String> etcContents = new HashSet<>();
-        //TODO
-        return etcContents;
+    private static Set<String> getEtcByGathered(String profileName) {
+        return readDirectoryIntoSet(new File(gathered + "/" + profileName));
+    }
+
+    private static Set<String> readDirectoryIntoSet(File directory) {
+        Set<String> directoryContents = new HashSet<>();
+        try {
+            if(directory.exists() && directory.isDirectory()) {
+                File[] files = directory.listFiles();
+                if(files != null && files.length > 0)
+                for (File file : files) {
+                    if (file.isFile()) {
+                        directoryContents.addAll(readFileIntoSet(file));
+                    }
+                }
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return directoryContents;
+    }
+
+    private static Set<String> readFileIntoSet(File file) {
+        Set<String> fileContents = new HashSet<>();
+        try {
+            if(file.exists() && file.isFile()) {
+                Scanner reader = new Scanner(file);
+                while(reader.hasNextLine()) {
+                    fileContents.add(reader.nextLine());
+                }
+                reader.close();
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return fileContents;
     }
 
 }
