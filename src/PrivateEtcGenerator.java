@@ -24,6 +24,9 @@ public class PrivateEtcGenerator {
     private static File profiles;
     private static File profilesNew;
     private static File gathered;
+
+    private static final List<String> gatheredIgnore = Arrays.asList("apparmor.d", "apport", "logrotate", "skel", "apache", "init.d", "bash_completion.d"
+        , "profile.d", "logrotate.d", "cron.weekly");
     private static final List<String> profilesTested = Arrays.asList("atril", "audacity", "bleachbit", "darktable", "eom", "gimp", "gnome-2048", "gnome-chess"
         , "gucharmap", "inkscape", "liferea", "lollypop", "mate-calc", "mate-color-select", "meld", "minetest", "onionshare", "parole", "picard", "pluma"
         , "scribus", "libreoffice", "simple-scan", "soundconverter", "torbrowser-launcher", "transmission-gtk", "xonotic", "wget", "youtube-dl", "pdfmod"
@@ -261,7 +264,7 @@ public class PrivateEtcGenerator {
         etcContents.add("passwd");
         //etcContents.add("security");
         //etcContents.add("system-fips");
-        etcContents.add("selinux");
+        //etcContents.add("selinux");
 
         return etcContents;
     }
@@ -392,7 +395,9 @@ public class PrivateEtcGenerator {
     }
 
     private static Set<String> getEtcByGathered(String profileName) {
-        return readDirectoryIntoSet(new File(gathered + "/" + profileName));
+        Set<String> etcContents = readDirectoryIntoSet(new File(gathered + "/" + profileName));
+        etcContents.removeAll(gatheredIgnore);
+        return etcContents;
     }
 
     private static Set<String> readDirectoryIntoSet(File directory) {
