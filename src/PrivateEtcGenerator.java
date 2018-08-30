@@ -139,7 +139,7 @@ public class PrivateEtcGenerator {
                 if (line.equals("allusers")) {
                     hasAllUsers = true;
                 }
-                if (line.contains("private-") && line.contains("tor") || profileName.contains("onionshare")) {
+                if (line.contains("private-") && (line.contains("tor")) || profileName.contains("onionshare")) { //TODO: IMPROVE ME!
                     specialExtras += "hasSpecialTor;";
                 }
                 if (line.contains("private-") && line.contains("java") || line.equals("noblacklist ${PATH}/java") || line.equals("noblacklist ${HOME}/.java")) {
@@ -164,7 +164,9 @@ public class PrivateEtcGenerator {
             Set<String> etcContents = new HashSet<>();
             etcContents.addAll(getEtcBase());
             etcContents.addAll(getEtcByProfileOptions(hasNetworking, hasSound, hasGui, has3d, hasDbus, hasGroups, hasAllUsers));
-            etcContents.addAll(getEtcByProfileOptionsGui(isGtk, isQt, isKde));
+            if(hasGui) {
+                etcContents.addAll(getEtcByProfileOptionsGui(isGtk, isQt, isKde));
+            }
             etcContents.addAll(getEtcBySpecial(specialExtras, profileName));
             etcContents.addAll(getEtcBySpecific(profileName));
             etcContents.addAll(getEtcByGathered(profileName));
@@ -341,7 +343,7 @@ public class PrivateEtcGenerator {
             etcContents.add("mono");
         }
         if (special.contains("hasSpecialSword;")) {
-            etcContents.add("mono");
+            etcContents.add("sword*");
         }
         if (special.contains("hasSpecialGimp;")) {
             etcContents.add("gimp");
