@@ -53,52 +53,52 @@ public class EtcGatherer {
                 }
                 programReader.close();
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         File firejailProfiles = new File("/etc/firejail/");
         try {
-            if(firejailProfiles.exists()) {
-                for(File contents : firejailProfiles.listFiles()) {
-                    if(contents.getName().endsWith(".profile")) {
+            if (firejailProfiles.exists()) {
+                for (File contents : firejailProfiles.listFiles()) {
+                    if (contents.getName().endsWith(".profile")) {
                         programs.add(contents.getName().replace(".profile", ""));
                     }
                 }
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
         System.out.println("Processing " + programs.size() + " programs");
         Long time = System.currentTimeMillis();
 
-        for(String program : programs) {
-            if(hasStrings) {
+        for (String program : programs) {
+            if (hasStrings) {
                 File programPath = new File("/usr/bin/" + program);
-                if(programPath.exists()) {
+                if (programPath.exists()) {
                     ArrayList<String> commandOutput = getOutputFromCommand(new String[] {"/usr/bin/strings", programPath.getAbsolutePath()});
                     Set<String> processedOutput = processOutputToSet(commandOutput, null);
                     writeSetToFile(processedOutput, new File(outputDirectory + program + "/" + "strings." + time + ".list"));
                 }
             }
-            if(hasAptFile) {
+            if (hasAptFile) {
                 ArrayList<String> commandOutput = getOutputFromCommand(new String[] {"/usr/bin/apt-file", "list", program});
                 Set<String> processedOutput = processOutputToSet(commandOutput, program + ": ");
                 writeSetToFile(processedOutput, new File(outputDirectory + program + "/" + "apt." + time + ".list"));
             }
-            if(hasRPM) {
+            if (hasRPM) {
                 ArrayList<String> commandOutput = getOutputFromCommand(new String[] {"/usr/bin/rpm", "-ql", program});
                 Set<String> processedOutput = processOutputToSet(commandOutput, null);
                 writeSetToFile(processedOutput, new File(outputDirectory + program + "/" + "rpm." + time + ".list"));
             }
-            if(hasPacman) {
+            if (hasPacman) {
                 ArrayList<String> commandOutput = getOutputFromCommand(new String[] {"/usr/bin/pacman", "-Ql", program});
                 Set<String> processedOutput = processOutputToSet(commandOutput, program + " ");
                 writeSetToFile(processedOutput, new File(outputDirectory + program + "/" + "pacman." + time + ".list"));
             }
-            if(hasDpkg) {
+            if (hasDpkg) {
                 File conffiles = new File("/var/lib/dpkg/info/" + program + ".conffiles");
-                if(conffiles.exists()) {
+                if (conffiles.exists()) {
                     ArrayList<String> commandOutput = getOutputFromCommand(new String[] {"/usr/bin/cat", conffiles.getAbsolutePath()});
                     Set<String> processedOutput = processOutputToSet(commandOutput, null);
                     writeSetToFile(processedOutput, new File(outputDirectory + program + "/" + "dpkg." + time + ".list"));
@@ -112,11 +112,11 @@ public class EtcGatherer {
         try {
             Process process = Runtime.getRuntime().exec(command);
             Scanner processOutput = new Scanner(process.getInputStream());
-            while(processOutput.hasNextLine()) {
+            while (processOutput.hasNextLine()) {
                 output.add(processOutput.nextLine());
             }
             processOutput.close();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return output;
@@ -124,13 +124,13 @@ public class EtcGatherer {
 
     private static Set<String> processOutputToSet(ArrayList<String> output, String filter) {
         Set<String> results = new HashSet<>();
-        for(String line : output) {
-            if(filter != null && filter.length() > 0) {
+        for (String line : output) {
+            if (filter != null && filter.length() > 0) {
                 line = line.replace(filter, "");
             }
-            if(line.startsWith("/etc/")) {
+            if (line.startsWith("/etc/")) {
                 line = line.replace("/etc/", ""); //Strip prefix
-                if(line.contains("/")) {
+                if (line.contains("/")) {
                     line = line.split("/")[0]; //Get basename
                 }
                 results.add(line);
@@ -141,17 +141,17 @@ public class EtcGatherer {
 
     private static void writeSetToFile(Set<String> contents, File output) {
         try {
-            if(contents.size() > 0) {
+            if (contents.size() > 0) {
                 output.getParentFile().mkdirs();
                 PrintWriter writer = new PrintWriter(output, "UTF-8");
                 for (String line : contents) {
-                    if(line.length() > 0) {
+                    if (line.length() > 0) {
                         writer.println(line);
                     }
                 }
                 writer.close();
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

@@ -31,14 +31,14 @@ public class PrivateEtcGenerator {
         , "arm", "nyx", "dex2jar", "dino", "jd-gui", "obs", "remmina", "pithos", "ppsspp", "shellcheck", "sdat2img", "virtualbox", "zaproxy", "steam");
 
     public static void main(String[] args) {
-        if(args.length == 0) {
+        if (args.length == 0) {
             System.out.println("Please supply an input an output path!");
             System.out.println("Both MUST be absolute and end with /");
             System.exit(1);
         }
         profiles = new File(args[0]);
         profilesNew = new File(args[1]);
-        for(File profile : profiles.listFiles()) {
+        for (File profile : profiles.listFiles()) {
             addEtc(profile);
         }
     }
@@ -69,39 +69,34 @@ public class PrivateEtcGenerator {
 
             ArrayList<String> profileContents = new ArrayList<String>();
             Scanner profileReader = new Scanner(profile);
-            while(profileReader.hasNextLine()) {
+            while (profileReader.hasNextLine()) {
                 String line = profileReader.nextLine();
                 String lineLower = line.toLowerCase();
                 profileContents.add(line);
 
-                if(line.startsWith("#private-etc")) {
+                if (line.startsWith("#private-etc")) {
                     hadPrivateEtc = 1;
                 }
-                if(line.startsWith("private-etc")) {
+                if (line.startsWith("private-etc")) {
                     hadPrivateEtc = 2;
                 }
                 if (lineLower.contains("redirect")) {
                     isRedirect = true;
                 }
 
-                if((line.startsWith("# Description:") && (lineLower.contains("gnome") || lineLower.contains("gtk")))
-                    || profileName.startsWith("gnome-")
-                    || profileName.endsWith("-gtk")) {
+                if ((line.startsWith("# Description:") && (lineLower.contains("gnome") || lineLower.contains("gtk"))) || profileName.startsWith("gnome-") || profileName.endsWith("-gtk")) {
                     isGtk = true;
                     isKde = false;
                     isQt = false;
                 }
 
-                if((line.startsWith("# Description:") && lineLower.contains("qt"))
-                    || profileName.endsWith("-qt")) {
+                if ((line.startsWith("# Description:") && lineLower.contains("qt")) || profileName.endsWith("-qt")) {
                     isGtk = false;
                     isQt = true;
                     isKde = false;
                 }
 
-                if((line.startsWith("# Description:") && lineLower.contains("kde"))
-                    || (line.contains("private-") && line.contains("kde"))
-                    || (line.contains("noblacklist") && lineLower.contains("/.kde"))) {
+                if ((line.startsWith("# Description:") && lineLower.contains("kde")) || (line.contains("private-") && line.contains("kde")) || (line.contains("noblacklist") && lineLower.contains("/.kde"))) {
                     isGtk = false;
                     isQt = true;
                     isKde = true;
@@ -116,10 +111,10 @@ public class PrivateEtcGenerator {
                 if (line.equals("quiet") /*|| line.equals("noblacklist /sbin")*/ || line.equals("private") || line.equals("blacklist /tmp/.X11-unix") || line.equals("x11 none")) {
                     hasGui = false;
                 }
-                if(profileName.equals("arm") || profileName.equals("nyx")) {
+                if (profileName.equals("arm") || profileName.equals("nyx")) {
                     hasGui = false;
                 }
-                if(profileName.equals("gucharmap") || profileName.equals("gnome-calculator")) {
+                if (profileName.equals("gucharmap") || profileName.equals("gnome-calculator")) {
                     hasGui = true;
                 }
                 if (line.equals("no3d")) {
@@ -166,17 +161,17 @@ public class PrivateEtcGenerator {
 
             String generatedEtc = shouldEnable(hadPrivateEtc, profileName) + "private-etc " + removeGlobs(delimitArray(etcContents));
 
-            if(generatedEtc.length() > 0 && !isRedirect) {
+            if (generatedEtc.length() > 0 && !isRedirect) {
                 boolean addedNewEtc = false;
                 PrintWriter profileOut = new PrintWriter(profileNew, "UTF-8");
                 String lastLine = "";
                 for (String newLine : profileContents) {
                     if ((newLine.contains("private-etc") || lastLine.contains("private-dev") || newLine.contains("private-tmp") || newLine.contains("noexec") || newLine.contains("read-only"))) {
-                        if(!addedNewEtc) {
+                        if (!addedNewEtc) {
                             profileOut.println(generatedEtc);
                             addedNewEtc = true;
                         }
-                        if(!newLine.contains("private-etc")) {
+                        if (!newLine.contains("private-etc")) {
                             profileOut.println(newLine);
                         }
                     } else {
@@ -185,7 +180,7 @@ public class PrivateEtcGenerator {
                     lastLine = newLine;
                 }
                 String prefix = "\n";
-                if(lastLine.contains("disable") || lastLine.contains("private")) {
+                if (lastLine.contains("disable") || lastLine.contains("private")) {
                     prefix = "";
                 }
                 if (!addedNewEtc) {
@@ -203,7 +198,7 @@ public class PrivateEtcGenerator {
     }
 
     private static String shouldEnable(int hadPrivateEtc, String profileName) {
-        if(hadPrivateEtc == 2 || profilesTested.contains(profileName)) {
+        if (hadPrivateEtc == 2 || profilesTested.contains(profileName)) {
             return "";
         }
         return "#";
@@ -309,16 +304,16 @@ public class PrivateEtcGenerator {
 
     private static Set<String> getEtcByProfileOptionsGui(boolean isGtk, boolean isQt, boolean isKde) {
         Set<String> etcContents = new HashSet<>();
-        if(isGtk) {
+        if (isGtk) {
             etcContents.add("dconf");
             etcContents.add("gconf");
             etcContents.add("gtk*");
         }
-        if(isQt) {
+        if (isQt) {
             etcContents.add("Trolltech.conf");
             //etcContents.add("sni-qt.conf");
         }
-        if(isKde) {
+        if (isKde) {
             etcContents.add("kde*rc");
         }
         return etcContents;

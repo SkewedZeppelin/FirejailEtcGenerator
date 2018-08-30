@@ -68,31 +68,26 @@ public class PrivateEtcGeneratorOld {
                 String lineLower = line.toLowerCase();
                 rebuiltProfile.add(line);
 
-                if(line.startsWith("#private-etc")) {
+                if (line.startsWith("#private-etc")) {
                     hadPrivateEtc = 1;
                 }
-                if(line.startsWith("private-etc")) {
+                if (line.startsWith("private-etc")) {
                     hadPrivateEtc = 2;
                 }
 
-                if((line.startsWith("# Description:") && (lineLower.contains("gnome") || lineLower.contains("gtk")))
-                    || profileName.startsWith("gnome-")
-                    || profileName.endsWith("-gtk")) {
+                if ((line.startsWith("# Description:") && (lineLower.contains("gnome") || lineLower.contains("gtk"))) || profileName.startsWith("gnome-") || profileName.endsWith("-gtk")) {
                     isGtk = true;
                     isKde = false;
                     isQt = false;
                 }
 
-                if((line.startsWith("# Description:") && lineLower.contains("qt"))
-                    || profileName.endsWith("-qt")) {
+                if ((line.startsWith("# Description:") && lineLower.contains("qt")) || profileName.endsWith("-qt")) {
                     isGtk = false;
                     isQt = true;
                     isKde = false;
                 }
 
-                if((line.startsWith("# Description:") && lineLower.contains("kde"))
-                    || (line.contains("private-") && line.contains("kde"))
-                    || (line.contains("noblacklist") && lineLower.contains("/.kde"))) {
+                if ((line.startsWith("# Description:") && lineLower.contains("kde")) || (line.contains("private-") && line.contains("kde")) || (line.contains("noblacklist") && lineLower.contains("/.kde"))) {
                     isGtk = false;
                     isQt = true;
                     isKde = true;
@@ -107,10 +102,10 @@ public class PrivateEtcGeneratorOld {
                 if (line.equals("quiet") /*|| line.equals("noblacklist /sbin")*/ || line.equals("private") || line.equals("blacklist /tmp/.X11-unix") || line.equals("x11 none")) {
                     hasGui = false;
                 }
-                if(profileName.equals("arm") || profileName.equals("nyx")) {
+                if (profileName.equals("arm") || profileName.equals("nyx")) {
                     hasGui = false;
                 }
-                if(profileName.equals("gucharmap") || profileName.equals("gnome-calculator")) {
+                if (profileName.equals("gucharmap") || profileName.equals("gnome-calculator")) {
                     hasGui = true;
                 }
                 if (line.equals("no3d")) {
@@ -182,11 +177,11 @@ public class PrivateEtcGeneratorOld {
                 String lastLine = "";
                 for (String newLine : rebuiltProfile) {
                     if ((newLine.contains("private-etc") || lastLine.contains("private-dev") || newLine.contains("private-tmp") || newLine.contains("noexec") || newLine.contains("read-only"))) {
-                        if(!addedNewEtc) {
+                        if (!addedNewEtc) {
                             profileOut.println(generatedEtc);
                             addedNewEtc = true;
                         }
-                        if(!newLine.contains("private-etc")) {
+                        if (!newLine.contains("private-etc")) {
                             profileOut.println(newLine);
                         }
                     } else {
@@ -195,7 +190,7 @@ public class PrivateEtcGeneratorOld {
                     lastLine = newLine;
                 }
                 String prefix = "\n";
-                if(lastLine.contains("disable") || lastLine.contains("private")) {
+                if (lastLine.contains("disable") || lastLine.contains("private")) {
                     prefix = "";
                 }
                 if (!addedNewEtc) {
@@ -257,16 +252,16 @@ public class PrivateEtcGeneratorOld {
             etcContents.add("fonts");
             etcContents.add("pango");
             etcContents.add("X11");
-            if(isGtk) {
+            if (isGtk) {
                 etcContents.add("dconf");
                 etcContents.add("gconf");
                 etcContents.add("gtk*");
             }
-            if(isQt) {
+            if (isQt) {
                 etcContents.add("Trolltech.conf");
                 //etcContents.add("sni-qt.conf");
             }
-            if(isKde) {
+            if (isKde) {
                 etcContents.add("kde*rc");
             }
         }
@@ -354,11 +349,10 @@ public class PrivateEtcGeneratorOld {
         , "pitivi", "baobab", "electrum", "epiphany", "evince", "gedit", "gitg", "gnome-calculator", "gnome-clocks", "gnome-contacts", "gnome-font-viewer"
         , "gnome-maps", "gnome-photos", "hexchat", "idea.sh", "mumble", "totem", "wireshark", "sqlitebrowser", "android-studio", "apktool", "arch-audit"
         , "arm", "nyx", "dex2jar", "dino", "jd-gui", "obs", "remmina", "pithos", "ppsspp", "shellcheck", "sdat2img", "virtualbox", "zaproxy", "steam");
-
     //Broken: gnome-logs
 
     private static String shouldEnable(int hadPrivateEtc, String profileName) {
-        if(hadPrivateEtc == 2 || profilesTested.contains(profileName)) {
+        if (hadPrivateEtc == 2 || profilesTested.contains(profileName)) {
             return "";
         }
         return "#";
