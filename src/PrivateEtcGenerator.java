@@ -64,6 +64,7 @@ public class PrivateEtcGenerator {
         System.out.println("\tProcessing " + profileName);
         try {
             int hadPrivateEtc = 0;
+            String existingEtc = "";
             boolean isRedirect = false;
 
             boolean hasNetworking = true;
@@ -92,6 +93,7 @@ public class PrivateEtcGenerator {
                 }
                 if (line.startsWith("private-etc")) {
                     hadPrivateEtc = 2;
+                    existingEtc = line.split("private-etc ")[1];
                 }
                 if (lineLower.contains("redirect")) {
                     isRedirect = true;
@@ -142,7 +144,7 @@ public class PrivateEtcGenerator {
                 if (line.equals("allusers")) {
                     hasAllUsers = true;
                 }
-                if (line.contains("private-") && (line.contains("tor")) || profileName.contains("onionshare")) { //TODO: IMPROVE ME!
+                if (line.contains("private-") && line.contains("tor") || profileName.contains("onionshare")) { //TODO: IMPROVE ME!
                     specialExtras += "hasSpecialTor;";
                 }
                 if (line.contains("private-") && line.contains("java") || line.equals("noblacklist ${PATH}/java") || line.equals("noblacklist ${HOME}/.java")) {
@@ -167,16 +169,16 @@ public class PrivateEtcGenerator {
             Set<String> etcContents = new HashSet<>();
             etcContents.addAll(getEtcBase());
             etcContents.addAll(getEtcByProfileOptions(hasNetworking, hasSound, hasGui, has3d, hasDbus, hasGroups, hasAllUsers));
-            if(hasGui) {
+            if (hasGui) {
                 etcContents.addAll(getEtcByProfileOptionsGui(isGtk, isQt, isKde));
             }
             etcContents.addAll(getEtcBySpecial(specialExtras, profileName));
             etcContents.addAll(getEtcBySpecific(profileName));
+            //etcContents.addAll(getEtcByExisting(existingEtc));
             etcContents.addAll(getEtcByGathered(profileName));
 
-            String generatedEtc = shouldEnable(hadPrivateEtc, profileName) + "private-etc " + removeGlobs(delimitArray(etcContents));
-
-            if (generatedEtc.length() > 0 && !isRedirect) {
+            if (etcContents.size() > 0 && !isRedirect) {
+                String generatedEtc = shouldEnable(hadPrivateEtc, profileName) + "private-etc " + removeGlobs(delimitArray(etcContents));
                 boolean addedNewEtc = false;
                 PrintWriter profileOut = new PrintWriter(profileNew, "UTF-8");
                 String lastLine = "";
@@ -352,7 +354,7 @@ public class PrivateEtcGenerator {
             etcContents.add("gimp");
         }
         if (special.contains("hasSpecialSelf;")) {
-            etcContents.add(profileName);
+            etcContents.add(profileName /* + "*" */);
         }
         return etcContents;
     }
@@ -394,9 +396,24 @@ public class PrivateEtcGenerator {
         return etcContents;
     }
 
+    private static Set<String> getEtcByExisting(String existingEtc) {
+        Set<String> etcContents = new HashSet<>();
+        if(existingEtc.contains(",")) {
+            String[] existing = existingEtc.split(",");
+            etcContents.addAll(Arrays.asList(existing));
+        } else if (existingEtc.length() > 0) {
+            etcContents.add(existingEtc);
+        }
+        return etcContents;
+    }
+
     private static Set<String> getEtcByGathered(String profileName) {
-        Set<String> etcContents = readDirectoryIntoSet(new File(gathered + "/" + profileName));
-        etcContents.removeAll(gatheredIgnore);
+        Set<String> etcContents = new HashSet<>();
+        File profileGathered = new File(gathered + "/" + profileName);
+        if(profileGathered.exists()) {
+            etcContents.addAll(readDirectoryIntoSet(profileGathered));
+            etcContents.removeAll(gatheredIgnore);
+        }
         return etcContents;
     }
 
