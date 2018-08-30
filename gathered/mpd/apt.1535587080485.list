@@ -1,0 +1,5 @@
+logrotate.d
+default
+mpd.conf
+init.d
+xdg

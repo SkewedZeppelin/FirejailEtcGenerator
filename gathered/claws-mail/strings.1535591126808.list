@@ -1,0 +1,10 @@
+apache
+shadow
+passwd
+mime.types
+skel
+resolv.conf
+mailcap
+ssl
+certs
+pki

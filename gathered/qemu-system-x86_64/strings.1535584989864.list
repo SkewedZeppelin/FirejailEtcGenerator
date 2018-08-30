@@ -1,0 +1,5 @@
+qemu
+qemu-ifdown
+qemu-ifup
+resolv.conf
+pki
