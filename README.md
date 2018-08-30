@@ -1,6 +1,8 @@
-General
+FirejailEtcGenerator
 ========
 This is a set of two utilities created in order to automatically generate 'private-etc' lines for Firejail profiles.
+It was created for https://github.com/netblue30/firejail/pull/2093
+and is meant to solve https://github.com/netblue30/firejail/issues/1734
 
 EtcGatherer
 -----------
@@ -18,7 +20,7 @@ Currently supported methods are:
 PrivateEtcGenerator
 -------------------
 This utility actually "analyzes" profiles and combines various sources to generate a 'private-etc' line.
-It then rewrites the program with the new line in place.
+It then rewrites the profile with the new line in place.
 
 TODO:
 - Improve GNOME/GTK/Qt/KDE handling
